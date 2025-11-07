@@ -1,0 +1,17 @@
+# AWS Configuration
+AWS_ACCESS_KEY_ID=your-access-key-id
+AWS_SECRET_ACCESS_KEY=your-secret-access-key
+AWS_REGION=us-east-1
+
+# SageMaker Configuration
+SAGEMAKER_ENDPOINT=mobile-price-predictor-endpoint
+SAGEMAKER_ROLE=arn:aws:iam::your-account-id:role/SageMakerExecutionRole
+
+# Flask Configuration
+FLASK_ENV=development
+SECRET_KEY=your-secret-key-here
+PORT=5000
+
+# S3 Configuration (for training data)
+S3_BUCKET_NAME=your-bucket-name
+

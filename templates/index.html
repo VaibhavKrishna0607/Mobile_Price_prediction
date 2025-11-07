@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smartphone Price Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📱 Smartphone Price Predictor</h1>
+            <p class="subtitle">Predict smartphone price ranges using Machine Learning</p>
+        </header>
+
+        <div class="main-content">
+            <div class="form-container">
+                <form id="predictionForm" class="prediction-form">
+                    <div class="form-section">
+                        <h2>📋 Basic Specifications</h2>
+                        
+                        <div class="form-group">
+                            <label for="battery_power">Battery Power (mAh)</label>
+                            <input type="number" id="battery_power" name="battery_power" min="500" max="6000" required>
+                            <small>Range: 500-6000 mAh</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ram">RAM (MB)</label>
+                            <input type="number" id="ram" name="ram" min="256" max="8192" step="256" required>
+                            <small>Range: 256-8192 MB (e.g., 2048 for 2GB)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="int_memory">Internal Memory (GB)</label>
+                            <input type="number" id="int_memory" name="int_memory" min="4" max="512" step="4" required>
+                            <small>Range: 4-512 GB</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="clock_speed">Clock Speed (GHz)</label>
+                            <input type="number" id="clock_speed" name="clock_speed" min="0.5" max="3.0" step="0.1" required>
+                            <small>Range: 0.5-3.0 GHz</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="n_cores">Number of Cores</label>
+                            <input type="number" id="n_cores" name="n_cores" min="1" max="10" required>
+                            <small>Range: 1-10 cores</small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>📷 Camera Specifications</h2>
+                        
+                        <div class="form-group">
+                            <label for="pc">Primary Camera (MP)</label>
+                            <input type="number" id="pc" name="pc" min="0" max="200" required>
+                            <small>Megapixels: 0-200 MP</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fc">Front Camera (MP)</label>
+                            <input type="number" id="fc" name="fc" min="0" max="50" required>
+                            <small>Megapixels: 0-50 MP</small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>🖥️ Display Specifications</h2>
+                        
+                        <div class="form-group">
+                            <label for="px_height">Pixel Resolution Height</label>
+                            <input type="number" id="px_height" name="px_height" min="0" max="2000" required>
+                            <small>Range: 0-2000 pixels</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="px_width">Pixel Resolution Width</label>
+                            <input type="number" id="px_width" name="px_width" min="0" max="2000" required>
+                            <small>Range: 0-2000 pixels</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sc_h">Screen Height (cm)</label>
+                            <input type="number" id="sc_h" name="sc_h" min="5" max="20" step="0.1" required>
+                            <small>Range: 5-20 cm</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sc_w">Screen Width (cm)</label>
+                            <input type="number" id="sc_w" name="sc_w" min="3" max="12" step="0.1" required>
+                            <small>Range: 3-12 cm</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="touch_screen">Touch Screen</label>
+                            <select id="touch_screen" name="touch_screen" required>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>📱 Physical Specifications</h2>
+                        
+                        <div class="form-group">
+                            <label for="mobile_wt">Mobile Weight (grams)</label>
+                            <input type="number" id="mobile_wt" name="mobile_wt" min="50" max="250" required>
+                            <small>Range: 50-250 grams</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="m_dep">Mobile Depth (cm)</label>
+                            <input type="number" id="m_dep" name="m_dep" min="0.1" max="2.0" step="0.01" required>
+                            <small>Range: 0.1-2.0 cm</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="talk_time">Talk Time (hours)</label>
+                            <input type="number" id="talk_time" name="talk_time" min="2" max="20" required>
+                            <small>Range: 2-20 hours</small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>📶 Connectivity & Features</h2>
+                        
+                        <div class="form-group">
+                            <label for="three_g">3G Support</label>
+                            <select id="three_g" name="three_g" required>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="four_g">4G Support</label>
+                            <select id="four_g" name="four_g" required>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="wifi">WiFi</label>
+                            <select id="wifi" name="wifi" required>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="blue">Bluetooth</label>
+                            <select id="blue" name="blue" required>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dual_sim">Dual SIM</label>
+                            <select id="dual_sim" name="dual_sim" required>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <span class="btn-text">Predict Price Range</span>
+                        <span class="btn-loader" style="display: none;">⏳ Predicting...</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="result-container" id="resultContainer" style="display: none;">
+                <div class="result-card">
+                    <h2>Prediction Result</h2>
+                    <div class="result-content">
+                        <div class="price-range" id="priceRange"></div>
+                        <div class="prediction-details" id="predictionDetails"></div>
+                    </div>
+                    <button class="reset-btn" onclick="resetForm()">Predict Another</button>
+                </div>
+            </div>
+
+            <div class="error-container" id="errorContainer" style="display: none;">
+                <div class="error-card">
+                    <h3>❌ Error</h3>
+                    <p id="errorMessage"></p>
+                    <button class="reset-btn" onclick="resetForm()">Try Again</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Powered by AWS SageMaker | Machine Learning Model</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
+
