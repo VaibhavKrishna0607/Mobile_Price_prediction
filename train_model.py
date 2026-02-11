@@ -7,10 +7,14 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import (
+    accuracy_score, classification_report, confusion_matrix,
+    precision_score, recall_score, f1_score,
+    mean_squared_error, mean_absolute_error, log_loss
+)
 import joblib
 import argparse
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 
 BASE_FEATURE_COLUMNS = [
@@ -105,18 +109,97 @@ def train_model(
     print(f"Best hyperparameters: {search.best_params_}")
     return search.best_estimator_
 
-def evaluate_model(model, X_test, y_test):
-    """Evaluate model performance"""
+def evaluate_model(model, X_test, y_test) -> Tuple[Dict, np.ndarray]:
+    """Evaluate model performance with comprehensive metrics"""
     y_pred = model.predict(X_test)
+    y_pred_proba = model.predict_proba(X_test)
+    
+    # Classification metrics
     accuracy = accuracy_score(y_test, y_pred)
+    precision_macro = precision_score(y_test, y_pred, average='macro', zero_division=0)
+    recall_macro = recall_score(y_test, y_pred, average='macro', zero_division=0)
+    f1_macro = f1_score(y_test, y_pred, average='macro', zero_division=0)
     
-    print(f"Accuracy: {accuracy:.4f}")
-    print("\nClassification Report:")
-    print(classification_report(y_test, y_pred))
-    print("\nConfusion Matrix:")
-    print(confusion_matrix(y_test, y_pred))
+    precision_weighted = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+    recall_weighted = recall_score(y_test, y_pred, average='weighted', zero_division=0)
+    f1_weighted = f1_score(y_test, y_pred, average='weighted', zero_division=0)
     
-    return accuracy, y_pred
+    # Per-class metrics
+    precision_per_class = precision_score(y_test, y_pred, average=None, zero_division=0)
+    recall_per_class = recall_score(y_test, y_pred, average=None, zero_division=0)
+    f1_per_class = f1_score(y_test, y_pred, average=None, zero_division=0)
+    
+    # Regression-style metrics (treating classes as ordinal)
+    mse = mean_squared_error(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
+    
+    # Probability-based metrics
+    logloss = log_loss(y_test, y_pred_proba)
+    
+    # Confusion matrix
+    cm = confusion_matrix(y_test, y_pred)
+    
+    # Compile metrics dictionary
+    metrics = {
+        'accuracy': accuracy,
+        'precision_macro': precision_macro,
+        'recall_macro': recall_macro,
+        'f1_macro': f1_macro,
+        'precision_weighted': precision_weighted,
+        'recall_weighted': recall_weighted,
+        'f1_weighted': f1_weighted,
+        'precision_per_class': precision_per_class.tolist(),
+        'recall_per_class': recall_per_class.tolist(),
+        'f1_per_class': f1_per_class.tolist(),
+        'mse': mse,
+        'mae': mae,
+        'rmse': np.sqrt(mse),
+        'log_loss': logloss,
+        'confusion_matrix': cm.tolist()
+    }
+    
+    # Print comprehensive report
+    print("\n" + "="*60)
+    print("COMPREHENSIVE MODEL EVALUATION METRICS")
+    print("="*60)
+    
+    print(f"\n[OVERALL METRICS]")
+    print(f"  Accuracy:           {accuracy:.4f}")
+    print(f"  Precision (Macro):  {precision_macro:.4f}")
+    print(f"  Recall (Macro):     {recall_macro:.4f}")
+    print(f"  F1-Score (Macro):   {f1_macro:.4f}")
+    print(f"  Precision (Weighted): {precision_weighted:.4f}")
+    print(f"  Recall (Weighted):    {recall_weighted:.4f}")
+    print(f"  F1-Score (Weighted):  {f1_weighted:.4f}")
+    
+    print(f"\n[REGRESSION-STYLE METRICS] (Classes as Ordinal)")
+    print(f"  MSE (Mean Squared Error):    {mse:.4f}")
+    print(f"  RMSE (Root Mean Squared Error): {np.sqrt(mse):.4f}")
+    print(f"  MAE (Mean Absolute Error):   {mae:.4f}")
+    
+    print(f"\n[PROBABILITY-BASED METRICS]")
+    print(f"  Log Loss:                    {logloss:.4f}")
+    
+    print(f"\n[PER-CLASS METRICS]")
+    class_names = ['Budget (0)', 'Lower Mid-range (1)', 'Upper Mid-range (2)', 'Premium (3)']
+    for i, name in enumerate(class_names):
+        print(f"  {name}:")
+        print(f"    Precision: {precision_per_class[i]:.4f}")
+        print(f"    Recall:    {recall_per_class[i]:.4f}")
+        print(f"    F1-Score:  {f1_per_class[i]:.4f}")
+    
+    print(f"\n[CLASSIFICATION REPORT]")
+    print(classification_report(y_test, y_pred, target_names=class_names, zero_division=0))
+    
+    print(f"\n[CONFUSION MATRIX]")
+    print(f"                    Predicted")
+    print(f"                    ", "  ".join([f"{i}" for i in range(len(class_names))]))
+    for i in range(len(class_names)):
+        print(f"Actual {class_names[i]:<20}", "  ".join([f"{cm[i][j]:3d}" for j in range(len(class_names))]))
+    
+    print("="*60)
+    
+    return metrics, y_pred
 
 def save_model(model, feature_columns, model_path='model.pkl'):
     """Save trained model together with metadata."""
@@ -168,10 +251,23 @@ def main():
     
     # Evaluate
     print("Evaluating model...")
-    accuracy, y_pred = evaluate_model(model, X_test, y_test)
+    metrics, y_pred = evaluate_model(model, X_test, y_test)
     
     # Save model
     save_model(model, feature_columns, args.model_path)
+    
+    # Optionally save metrics to file
+    metrics_file = args.model_path.replace('.pkl', '_metrics.txt')
+    with open(metrics_file, 'w') as f:
+        f.write("Model Evaluation Metrics\n")
+        f.write("="*60 + "\n\n")
+        for key, value in metrics.items():
+            if key != 'confusion_matrix':
+                f.write(f"{key}: {value}\n")
+        f.write("\nConfusion Matrix:\n")
+        for row in metrics['confusion_matrix']:
+            f.write(" ".join(map(str, row)) + "\n")
+    print(f"\nMetrics saved to {metrics_file}")
     
     print("\nTraining completed successfully!")
 

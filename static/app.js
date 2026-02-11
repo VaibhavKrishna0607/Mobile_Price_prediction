@@ -116,11 +116,15 @@ function resetForm() {
 // Add input validation and helpful tooltips
 document.querySelectorAll('input[type="number"]').forEach(input => {
     input.addEventListener('input', function() {
+        if (this.value === '') return; // Skip validation for empty values
+        
         const min = parseFloat(this.min);
         const max = parseFloat(this.max);
         const value = parseFloat(this.value);
         
-        if (value < min) {
+        if (isNaN(value)) {
+            this.setCustomValidity('Please enter a valid number');
+        } else if (value < min) {
             this.setCustomValidity(`Value must be at least ${min}`);
         } else if (value > max) {
             this.setCustomValidity(`Value must be at most ${max}`);
@@ -131,14 +135,14 @@ document.querySelectorAll('input[type="number"]').forEach(input => {
     
     // Show validation on blur
     input.addEventListener('blur', function() {
-        if (!this.checkValidity()) {
+        if (this.value !== '' && !this.checkValidity()) {
             this.reportValidity();
         }
     });
 });
 
 // Add sample data button (for testing)
-function fillSampleData() {
+window.fillSampleData = function() {
     // Sample smartphone specifications
     const sampleData = {
         battery_power: 2000,
@@ -170,8 +174,9 @@ function fillSampleData() {
             input.value = sampleData[key];
         }
     });
-}
+};
 
-// Uncomment the line below to add a "Fill Sample Data" button for testing
-// console.log('To test with sample data, call fillSampleData() in the console');
+// Log helper message
+console.log('Sample data function available. Click "Fill Sample Data" button to populate the form.');
+
 

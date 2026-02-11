@@ -78,8 +78,8 @@ def prepare_features(form_data):
         int(form_data.get('px_height', 0)),  # Pixel Resolution Height
         int(form_data.get('px_width', 0)),  # Pixel Resolution Width
         int(form_data.get('ram', 0)),  # RAM in MB
-        int(form_data.get('sc_h', 0)),  # Screen Height in cm
-        int(form_data.get('sc_w', 0)),  # Screen Width in cm
+        float(form_data.get('sc_h', 0)),  # Screen Height in cm
+        float(form_data.get('sc_w', 0)),  # Screen Width in cm
         int(form_data.get('talk_time', 0)),  # Talk time in hours
         int(form_data.get('three_g', 0)),
         int(form_data.get('touch_screen', 0)),
