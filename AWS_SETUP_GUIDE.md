@@ -28,7 +28,7 @@ This guide will walk you through setting up AWS SageMaker for the Mobile Price P
 
 4. **Save Credentials**:
    - **Access Key ID**: Copy this value
-   - **Secret Access Key**: Copy this value (only shown once!)
+   - **Secret Access Key**: Copy this value (only shown once!) 
    - Save these securely - you'll need them for `.env` file
 
 ### Step 2: Create IAM Role for SageMaker
@@ -223,8 +223,6 @@ PORT=5000
 python app.py
 ```
 
-Visit `http://localhost:5000/health` to verify connection.
-
 ### Step 8: Test the Application
 
 1. **Start the app**:
@@ -233,7 +231,7 @@ python app.py
 ```
 
 2. **Test prediction**:
-   - Open `http://localhost:5000`
+   - Open the local running link.
    - Fill in the form
    - Click "Predict Price Range"
    - Verify prediction is returned
