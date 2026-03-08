@@ -42,6 +42,20 @@ try:
 except Exception as e:
     logger.warning(f"Failed to load local model: {e}")
 
+# Load real-world smartphones dataset for recommendations
+import pandas as pd
+REAL_PHONES_PATH = os.environ.get('REAL_PHONES_PATH', 'real_world_smartphones.csv')
+real_phones_df = None
+try:
+    if os.path.exists(REAL_PHONES_PATH):
+        real_phones_df = pd.read_csv(REAL_PHONES_PATH)
+        real_phones_df = real_phones_df.dropna(subset=['price', 'ram_capacity', 'battery_capacity', 'primary_camera_rear', 'internal_memory'])
+        logger.info(f"Real phones dataset loaded: {len(real_phones_df)} phones")
+    else:
+        logger.warning(f"Real phones dataset not found at {REAL_PHONES_PATH}")
+except Exception as e:
+    logger.warning(f"Failed to load real phones dataset: {e}")
+
 # Initialize SageMaker clients (only if credentials are available)
 sagemaker_runtime = None
 sagemaker_client = None
@@ -191,6 +205,64 @@ def mock_predict_price_range(features):
     return {'predictions': [{'predicted_label': prediction}]}
 
 
+def recommend_phones(features, predicted_range, n=5):
+    """
+    Find top N real-world phones matching the predicted price range and user specs.
+    Uses weighted similarity scoring across key specs.
+    """
+    if real_phones_df is None:
+        return []
+
+    price_bins = {
+        0: (0, 10000),
+        1: (10000, 20000),
+        2: (20000, 35000),
+        3: (35000, float('inf'))
+    }
+
+    low, high = price_bins.get(predicted_range, (0, float('inf')))
+    candidates = real_phones_df[
+        (real_phones_df['price'] >= low) & (real_phones_df['price'] < high)
+    ].copy()
+
+    if candidates.empty:
+        return []
+
+    # User specs from feature vector (matches prepare_features order)
+    battery  = features[0]   # mAh
+    ram_mb   = features[13]  # MB  → convert to GB
+    pc       = features[10]  # primary camera MP
+    int_mem  = features[6]   # internal memory GB
+    ram_gb   = ram_mb / 1024.0
+
+    # Normalised absolute difference per feature (0 = perfect match, 1 = worst)
+    def norm_diff(user_val, col):
+        col_min = candidates[col].min()
+        col_max = candidates[col].max()
+        spread = col_max - col_min
+        if spread == 0:
+            return 0.0
+        return (candidates[col] - user_val).abs() / spread
+
+    candidates['_score'] = (
+        norm_diff(ram_gb, 'ram_capacity')        * 0.35 +
+        norm_diff(battery, 'battery_capacity')   * 0.25 +
+        norm_diff(pc, 'primary_camera_rear')     * 0.20 +
+        norm_diff(int_mem, 'internal_memory')    * 0.20
+    )
+
+    top = candidates.nsmallest(n, '_score')[[
+        'brand_name', 'model', 'price', 'avg_rating',
+        'ram_capacity', 'battery_capacity', 'primary_camera_rear',
+        'internal_memory', '5G_or_not', 'refresh_rate'
+    ]].copy()
+
+    top['brand_name'] = top['brand_name'].str.title()
+    top['5G_or_not'] = top['5G_or_not'].astype(int)
+
+    return top.to_dict('records')
+
+
 def predict_price_range(features):
     """
     Call SageMaker endpoint to get price prediction.
@@ -271,12 +343,16 @@ def predict():
             prediction = int(prediction_result) if isinstance(prediction_result, (int, float)) else 0
         
         price_range = price_ranges.get(prediction, 'Unknown')
-        
+
+        # Get real phone recommendations
+        recommended_phones = recommend_phones(features, int(prediction))
+
         return jsonify({
             'success': True,
             'prediction': int(prediction),
             'price_range': price_range,
-            'features': features
+            'features': features,
+            'recommended_phones': recommended_phones
         })
         
     except Exception as e:

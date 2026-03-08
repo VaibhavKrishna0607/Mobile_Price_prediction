@@ -89,8 +89,48 @@ function displayResult(result) {
     // Show result container
     resultContainer.style.display = 'block';
     
+    // Show recommendations if available
+    if (result.recommended_phones && result.recommended_phones.length > 0) {
+        displayRecommendations(result.recommended_phones);
+    }
+    
     // Scroll to result
     resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function displayRecommendations(phones) {
+    const container = document.getElementById('recommendationsContainer');
+    const grid = document.getElementById('phoneGrid');
+
+    grid.innerHTML = phones.map(phone => `
+        <div class="phone-card">
+            <div class="phone-card-header">
+                <span class="phone-brand">${phone.brand_name}</span>
+                ${phone['5G_or_not'] ? '<span class="badge-5g">5G</span>' : ''}
+            </div>
+            <div class="phone-name">${phone.model}</div>
+            <div class="phone-price">&#8377;${Number(phone.price).toLocaleString('en-IN')}</div>
+            <div class="phone-rating">${renderStars(phone.avg_rating)} <span>${Number(phone.avg_rating).toFixed(1)}</span></div>
+            <div class="phone-specs">
+                <div class="spec-item"><i data-lucide="cpu"></i> ${phone.ram_capacity} GB RAM</div>
+                <div class="spec-item"><i data-lucide="battery"></i> ${phone.battery_capacity} mAh</div>
+                <div class="spec-item"><i data-lucide="camera"></i> ${phone.primary_camera_rear} MP</div>
+                <div class="spec-item"><i data-lucide="hard-drive"></i> ${phone.internal_memory} GB</div>
+                <div class="spec-item"><i data-lucide="refresh-cw"></i> ${phone.refresh_rate} Hz</div>
+            </div>
+        </div>
+    `).join('');
+
+    container.style.display = 'block';
+    lucide.createIcons();
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderStars(rating) {
+    const full = Math.round(rating / 2); // rating is out of 10, stars out of 5
+    return Array.from({length: 5}, (_, i) =>
+        `<span class="star ${i < full ? 'filled' : ''}">&#9733;</span>`
+    ).join('');
 }
 
 function displayError(errorMessage) {
@@ -111,6 +151,7 @@ function resetForm() {
     // Hide results
     document.getElementById('resultContainer').style.display = 'none';
     document.getElementById('errorContainer').style.display = 'none';
+    document.getElementById('recommendationsContainer').style.display = 'none';
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
