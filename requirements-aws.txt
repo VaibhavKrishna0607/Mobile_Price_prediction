@@ -1,0 +1,4 @@
+# Extra dependencies needed only for SageMaker training/deployment
+# Install with: pip install -r requirements-aws.txt
+-r requirements.txt
+sagemaker==2.190.0
