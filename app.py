@@ -87,128 +87,87 @@ else:
         USE_MOCK_PREDICTIONS = True
 
 
-def prepare_features(form_data):
-    """
-    Prepare features from form data to match model input format.
-    Maps form fields to the expected feature array.
-    """
-    # Feature order (20 features):
-    # battery_power, blue, clock_speed, dual_sim, fc, four_g, int_memory,
-    # m_dep, mobile_wt, n_cores, pc, px_height, px_width, ram, sc_h, sc_w,
-    # talk_time, three_g, touch_screen, wifi
-    
-    features = [
-        int(form_data.get('battery_power', 0)),
-        int(form_data.get('blue', 0)),
-        float(form_data.get('clock_speed', 0)),
-        int(form_data.get('dual_sim', 0)),
-        int(form_data.get('fc', 0)),  # Front Camera megapixels
-        int(form_data.get('four_g', 0)),
-        int(form_data.get('int_memory', 0)),  # Internal Memory in GB
-        float(form_data.get('m_dep', 0)),  # Mobile Depth in cm
-        int(form_data.get('mobile_wt', 0)),  # Weight in grams
-        int(form_data.get('n_cores', 0)),
-        int(form_data.get('pc', 0)),  # Primary Camera megapixels
-        int(form_data.get('px_height', 0)),  # Pixel Resolution Height
-        int(form_data.get('px_width', 0)),  # Pixel Resolution Width
-        int(form_data.get('ram', 0)),  # RAM in MB
-        float(form_data.get('sc_h', 0)),  # Screen Height in cm
-        float(form_data.get('sc_w', 0)),  # Screen Width in cm
-        int(form_data.get('talk_time', 0)),  # Talk time in hours
-        int(form_data.get('three_g', 0)),
-        int(form_data.get('touch_screen', 0)),
-        int(form_data.get('wifi', 0))
-    ]
-    
-    return features
-
-
-BASE_FEATURE_COLUMNS = [
-    'battery_power', 'blue', 'clock_speed', 'dual_sim', 'fc',
-    'four_g', 'int_memory', 'm_dep', 'mobile_wt', 'n_cores',
-    'pc', 'px_height', 'px_width', 'ram', 'sc_h', 'sc_w',
-    'talk_time', 'three_g', 'touch_screen', 'wifi'
+FORM_FIELDS = [
+    'ram_capacity', 'battery_capacity', 'processor_speed', 'num_cores',
+    'primary_camera_rear', 'primary_camera_front', 'internal_memory',
+    'resolution_height', 'resolution_width', 'screen_size', 'refresh_rate',
+    '5G_or_not', 'fast_charging_available', 'extended_memory_available', 'num_rear_cameras'
 ]
+
+_FIELD_CONVERTERS = {
+    'ram_capacity': float, 'battery_capacity': float, 'processor_speed': float,
+    'num_cores': int, 'primary_camera_rear': int, 'primary_camera_front': int,
+    'internal_memory': int, 'resolution_height': int, 'resolution_width': int,
+    'screen_size': float, 'refresh_rate': int, '5G_or_not': int,
+    'fast_charging_available': int, 'extended_memory_available': int, 'num_rear_cameras': int,
+}
+
+
+def prepare_features(form_data):
+    """Extract and type-convert form fields into the feature vector for the model."""
+    return [_FIELD_CONVERTERS[f](form_data.get(f) or '0') for f in FORM_FIELDS]
+
+
+BASE_FEATURE_COLUMNS = FORM_FIELDS
 
 
 def local_predict_price_range(features):
-    """
-    Predict using the locally trained .pkl model with feature engineering.
-    """
-    artifact = local_model_artifact
-    model = artifact['model']
+    """Predict using the locally trained .pkl model with feature engineering."""
+    model = local_model_artifact['model']
 
-    battery_power, _, _, _, _, _, _, _, mobile_wt, n_cores, _, px_height, px_width, ram, sc_h, sc_w, _, _, _, _ = features
+    # features order: ram(0), battery(1), proc_speed(2), num_cores(3),
+    # pc_rear(4), pc_front(5), int_mem(6), res_h(7), res_w(8), screen_size(9),
+    # refresh_rate(10), 5G(11), fast_charging(12), ext_mem(13), num_cams(14)
+    ram, battery, _, num_cores, _, _, _, res_h, res_w, screen_size, _, _, _, _, _ = features
 
-    pixel_area = px_height * px_width
-    ppi = np.sqrt(px_height ** 2 + px_width ** 2) / (sc_h if sc_h != 0 else 1)
-    screen_ratio = sc_h / sc_w if sc_w != 0 else 0
-    ram_per_core = ram / n_cores if n_cores != 0 else 0
-    battery_per_weight = battery_power / mobile_wt if mobile_wt != 0 else 0
+    pixel_area = res_h * res_w
+    ppi = np.sqrt(res_h ** 2 + res_w ** 2) / (screen_size if screen_size > 0 else 1)
+    ram_per_core = ram / num_cores if num_cores > 0 else 0
+    battery_per_ram = battery / ram if ram > 0 else 0
 
-    full_features = list(features) + [pixel_area, ppi, screen_ratio, ram_per_core, battery_per_weight]
+    full_features = list(features) + [pixel_area, ppi, ram_per_core, battery_per_ram]
     prediction = model.predict([full_features])[0]
     return {'predictions': [{'predicted_label': int(prediction)}]}
 
 
 def mock_predict_price_range(features):
-    """
-    Fallback rule-based prediction when neither AWS nor local model is available.
-    """
-    ram = features[13]  # RAM in MB
-    battery = features[0]  # Battery power
-    pc = features[10]  # Primary camera
-    px_height = features[11]  # Pixel height
-    px_width = features[12]  # Pixel width
-    
-    # Simple rule-based classification
-    score = 0
-    
-    # RAM contribution
-    if ram >= 6144:  # 6GB+
-        score += 3
-    elif ram >= 4096:  # 4GB+
-        score += 2
-    elif ram >= 3072:  # 3GB+
-        score += 1
-    
-    # Battery contribution
-    if battery >= 4000:
-        score += 1
-    elif battery >= 3000:
-        score += 0.5
-    
-    # Camera contribution
-    if pc >= 48:
-        score += 2
-    elif pc >= 24:
-        score += 1
-    elif pc >= 12:
-        score += 0.5
-    
-    # Display resolution
-    if px_height >= 2400 and px_width >= 1080:
-        score += 1
-    elif px_height >= 1920:
-        score += 0.5
-    
-    # Map score to price range (0-3)
-    if score >= 6:
-        prediction = 3  # Premium
-    elif score >= 4:
-        prediction = 2  # Upper mid-range
-    elif score >= 2:
-        prediction = 1  # Lower mid-range
-    else:
-        prediction = 0  # Budget
-    
+    """Fallback rule-based prediction when no model is available."""
+    ram_gb  = features[0]   # GB
+    battery = features[1]   # mAh
+    pc      = features[4]   # primary camera MP
+    res_h   = features[7]   # resolution height px
+    five_g  = features[11]  # 0/1
+
+    score = 0.0
+    if ram_gb >= 12:      score += 3
+    elif ram_gb >= 8:     score += 2
+    elif ram_gb >= 6:     score += 1.5
+    elif ram_gb >= 4:     score += 0.5
+
+    if battery >= 5000:   score += 0.5
+    elif battery >= 4000: score += 0.3
+
+    if pc >= 108:         score += 2
+    elif pc >= 50:        score += 1
+    elif pc >= 12:        score += 0.5
+
+    if res_h >= 2400:     score += 1
+    elif res_h >= 1080:   score += 0.5
+
+    if five_g:            score += 1
+
+    if score >= 6:        prediction = 3
+    elif score >= 4:      prediction = 2
+    elif score >= 2:      prediction = 1
+    else:                 prediction = 0
+
     return {'predictions': [{'predicted_label': prediction}]}
 
 
 def recommend_phones(features, predicted_range, n=5):
     """
     Find top N real-world phones matching the predicted price range and user specs.
-    Uses weighted similarity scoring across key specs.
+    Uses weighted similarity scoring with brand diversity to show variety.
     """
     if real_phones_df is None:
         return []
@@ -229,11 +188,10 @@ def recommend_phones(features, predicted_range, n=5):
         return []
 
     # User specs from feature vector (matches prepare_features order)
-    battery  = features[0]   # mAh
-    ram_mb   = features[13]  # MB  → convert to GB
-    pc       = features[10]  # primary camera MP
+    ram_gb   = features[0]   # GB directly
+    battery  = features[1]   # mAh
+    pc       = features[4]   # primary camera MP
     int_mem  = features[6]   # internal memory GB
-    ram_gb   = ram_mb / 1024.0
 
     # Normalised absolute difference per feature (0 = perfect match, 1 = worst)
     def norm_diff(user_val, col):
@@ -251,16 +209,41 @@ def recommend_phones(features, predicted_range, n=5):
         norm_diff(int_mem, 'internal_memory')    * 0.20
     )
 
-    top = candidates.nsmallest(n, '_score')[[
+    # Get top matches with brand diversity
+    # First, get more candidates than needed
+    top_candidates = candidates.nsmallest(n * 3, '_score')
+    
+    # Select diverse brands - max 2 phones per brand
+    selected = []
+    brand_count = {}
+    
+    for _, phone in top_candidates.iterrows():
+        brand = phone['brand_name']
+        if brand_count.get(brand, 0) < 2:  # Max 2 per brand
+            selected.append(phone)
+            brand_count[brand] = brand_count.get(brand, 0) + 1
+            if len(selected) >= n:
+                break
+    
+    # If we don't have enough, fill with remaining best matches
+    if len(selected) < n:
+        remaining = top_candidates[~top_candidates.index.isin([p.name for p in selected])]
+        for _, phone in remaining.iterrows():
+            selected.append(phone)
+            if len(selected) >= n:
+                break
+    
+    # Convert to DataFrame for easier processing
+    result_df = pd.DataFrame(selected)[[
         'brand_name', 'model', 'price', 'avg_rating',
         'ram_capacity', 'battery_capacity', 'primary_camera_rear',
         'internal_memory', '5G_or_not', 'refresh_rate'
     ]].copy()
 
-    top['brand_name'] = top['brand_name'].str.title()
-    top['5G_or_not'] = top['5G_or_not'].astype(int)
+    result_df['brand_name'] = result_df['brand_name'].str.title()
+    result_df['5G_or_not'] = result_df['5G_or_not'].astype(int)
 
-    return top.to_dict('records')
+    return result_df.to_dict('records')
 
 
 def predict_price_range(features):
@@ -318,8 +301,9 @@ def predict():
         # Prepare features
         features = prepare_features(form_data)
         
-        # Validate features
-        if not all(features):
+        # Validate: all required fields must be provided
+        missing = [f for f in FORM_FIELDS if not form_data.get(f, '')]
+        if missing:
             return jsonify({
                 'success': False,
                 'error': 'Please fill in all fields'
@@ -344,8 +328,8 @@ def predict():
         
         price_range = price_ranges.get(prediction, 'Unknown')
 
-        # Get real phone recommendations
-        recommended_phones = recommend_phones(features, int(prediction))
+        # Get real phone recommendations - show more for variety (8 phones)
+        recommended_phones = recommend_phones(features, int(prediction), n=8)
 
         return jsonify({
             'success': True,

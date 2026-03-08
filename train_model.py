@@ -18,54 +18,53 @@ from typing import Tuple, List, Dict
 
 
 BASE_FEATURE_COLUMNS = [
-    'battery_power', 'blue', 'clock_speed', 'dual_sim', 'fc',
-    'four_g', 'int_memory', 'm_dep', 'mobile_wt', 'n_cores',
-    'pc', 'px_height', 'px_width', 'ram', 'sc_h', 'sc_w',
-    'talk_time', 'three_g', 'touch_screen', 'wifi'
+    'ram_capacity', 'battery_capacity', 'processor_speed', 'num_cores',
+    'primary_camera_rear', 'primary_camera_front', 'internal_memory',
+    'resolution_height', 'resolution_width', 'screen_size', 'refresh_rate',
+    '5G_or_not', 'fast_charging_available', 'extended_memory_available', 'num_rear_cameras'
 ]
 
 ENGINEERED_FEATURE_COLUMNS = [
-    'pixel_area', 'ppi', 'screen_ratio', 'ram_per_core', 'battery_per_weight'
+    'pixel_area', 'ppi', 'ram_per_core', 'battery_per_ram'
 ]
 
-def load_data(mob_price_classification_train: str) -> pd.DataFrame:
+def load_data(data_path: str) -> pd.DataFrame:
     """Load training data from CSV"""
-    df = pd.read_csv(mob_price_classification_train)
+    df = pd.read_csv(data_path)
     return df
 
 def preprocess_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series, List[str]]:
-    """Preprocess the data and engineer additional features."""
+    """Preprocess real-world smartphone data and engineer features."""
 
     df = df.copy()
+
+    # Create price_range from raw INR prices if not already present
+    if 'price_range' not in df.columns and 'price' in df.columns:
+        bins = [0, 10000, 20000, 35000, float('inf')]
+        df['price_range'] = pd.cut(df['price'], bins=bins, labels=[0, 1, 2, 3])
+        df['price_range'] = df['price_range'].astype(int)
 
     missing_columns = [col for col in BASE_FEATURE_COLUMNS if col not in df.columns]
     if missing_columns:
         raise ValueError(f"Missing required feature columns: {missing_columns}")
 
-    # Clean numeric columns: remove whitespace from string values, then coerce to numeric
     for col in BASE_FEATURE_COLUMNS:
-        df[col] = df[col].astype(str).str.replace(r'\s+', '', regex=True)
         df[col] = pd.to_numeric(df[col], errors='coerce')
-    df.dropna(subset=BASE_FEATURE_COLUMNS, inplace=True)
+    df.dropna(subset=BASE_FEATURE_COLUMNS + ['price_range'], inplace=True)
 
-    # Feature engineering to boost model performance
-    df['pixel_area'] = df['px_height'] * df['px_width']
-    df['ppi'] = np.sqrt(df['px_height'] ** 2 + df['px_width'] ** 2) / np.where(df['sc_h'] == 0, 1, df['sc_h'])
-    df['screen_ratio'] = np.where(df['sc_w'] == 0, 0, df['sc_h'] / df['sc_w'])
-    df['ram_per_core'] = np.where(df['n_cores'] == 0, 0, df['ram'] / df['n_cores'])
-    df['battery_per_weight'] = np.where(df['mobile_wt'] == 0, 0, df['battery_power'] / df['mobile_wt'])
+    # Feature engineering
+    df['pixel_area'] = df['resolution_height'] * df['resolution_width']
+    df['ppi'] = (
+        np.sqrt(df['resolution_height'] ** 2 + df['resolution_width'] ** 2)
+        / np.where(df['screen_size'] == 0, 1, df['screen_size'])
+    )
+    df['ram_per_core'] = np.where(df['num_cores'] == 0, 0, df['ram_capacity'] / df['num_cores'])
+    df['battery_per_ram'] = np.where(df['ram_capacity'] == 0, 0, df['battery_capacity'] / df['ram_capacity'])
 
     feature_columns = BASE_FEATURE_COLUMNS + ENGINEERED_FEATURE_COLUMNS
 
-    target_column = 'price_range'
-    if target_column not in df.columns:
-        possible_targets = ['price', 'target', 'price_category']
-        target_column = next((col for col in possible_targets if col in df.columns), None)
-        if target_column is None:
-            raise ValueError("Target column not found. Expected one of: price_range, price, target, price_category")
-
     X = df[feature_columns]
-    y = df[target_column]
+    y = df['price_range']
 
     return X, y, feature_columns
 

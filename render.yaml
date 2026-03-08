@@ -2,7 +2,7 @@ services:
   - type: web
     name: mobile-price-predictor
     runtime: python
-    buildCommand: "pip install -r requirements.txt && python train_model.py --data mob_price_classification_train.csv --model-path mobile_price_model.pkl"
+    buildCommand: "pip install -r requirements.txt && python train_model.py --data real_world_smartphones.csv --model-path mobile_price_model.pkl"
     startCommand: "gunicorn app:app"
     envVars:
       - key: SECRET_KEY

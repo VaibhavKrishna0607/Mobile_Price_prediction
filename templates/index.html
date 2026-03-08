@@ -5,217 +5,322 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smartphone Price Predictor</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i data-lucide="smartphone"></i> Smartphone Price Predictor</h1>
-            <p class="subtitle">Predict smartphone price ranges using Machine Learning</p>
-        </header>
+    <!-- Animated Background -->
+    <div class="background"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
 
-        <div class="main-content">
-            <div class="form-container">
-                <form id="predictionForm" class="prediction-form">
-                    <div class="form-section">
-                        <h2><i data-lucide="list"></i> Basic Specifications</h2>
-                        
-                        <div class="form-group">
-                            <label for="battery_power">Battery Power (mAh)</label>
-                            <input type="number" id="battery_power" name="battery_power" min="500" max="6000" required>
-                            <small>Range: 500-6000 mAh</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="ram">RAM (MB)</label>
-                            <input type="number" id="ram" name="ram" min="256" max="8192" step="256" required>
-                            <small>Range: 256-8192 MB (e.g., 2048 for 2GB)</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="int_memory">Internal Memory (GB)</label>
-                            <input type="number" id="int_memory" name="int_memory" min="4" max="512" step="4" required>
-                            <small>Range: 4-512 GB</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="clock_speed">Clock Speed (GHz)</label>
-                            <input type="number" id="clock_speed" name="clock_speed" min="0.5" max="3.0" step="0.1" required>
-                            <small>Range: 0.5-3.0 GHz</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="n_cores">Number of Cores</label>
-                            <input type="number" id="n_cores" name="n_cores" min="1" max="10" required>
-                            <small>Range: 1-10 cores</small>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h2><i data-lucide="camera"></i> Camera Specifications</h2>
-                        
-                        <div class="form-group">
-                            <label for="pc">Primary Camera (MP)</label>
-                            <input type="number" id="pc" name="pc" min="0" max="200" required>
-                            <small>Megapixels: 0-200 MP</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="fc">Front Camera (MP)</label>
-                            <input type="number" id="fc" name="fc" min="0" max="50" required>
-                            <small>Megapixels: 0-50 MP</small>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h2><i data-lucide="monitor"></i> Display Specifications</h2>
-                        
-                        <div class="form-group">
-                            <label for="px_height">Pixel Resolution Height</label>
-                            <input type="number" id="px_height" name="px_height" min="0" max="2000" required>
-                            <small>Range: 0-2000 pixels</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="px_width">Pixel Resolution Width</label>
-                            <input type="number" id="px_width" name="px_width" min="0" max="2000" required>
-                            <small>Range: 0-2000 pixels</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="sc_h">Screen Height (cm)</label>
-                            <input type="number" id="sc_h" name="sc_h" min="5" max="20" step="0.1" required>
-                            <small>Range: 5-20 cm</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="sc_w">Screen Width (cm)</label>
-                            <input type="number" id="sc_w" name="sc_w" min="3" max="12" step="0.1" required>
-                            <small>Range: 3-12 cm</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="touch_screen">Touch Screen</label>
-                            <select id="touch_screen" name="touch_screen" required>
-                                <option value="1">Yes</option>
-                                <option value="0">No</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h2><i data-lucide="tablet-smartphone"></i> Physical Specifications</h2>
-                        
-                        <div class="form-group">
-                            <label for="mobile_wt">Mobile Weight (grams)</label>
-                            <input type="number" id="mobile_wt" name="mobile_wt" min="50" max="250" required>
-                            <small>Range: 50-250 grams</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="m_dep">Mobile Depth (cm)</label>
-                            <input type="number" id="m_dep" name="m_dep" min="0.1" max="2.0" step="0.01" required>
-                            <small>Range: 0.1-2.0 cm</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="talk_time">Talk Time (hours)</label>
-                            <input type="number" id="talk_time" name="talk_time" min="2" max="20" required>
-                            <small>Range: 2-20 hours</small>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h2><i data-lucide="wifi"></i> Connectivity &amp; Features</h2>
-                        
-                        <div class="form-group">
-                            <label for="three_g">3G Support</label>
-                            <select id="three_g" name="three_g" required>
-                                <option value="1">Yes</option>
-                                <option value="0">No</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="four_g">4G Support</label>
-                            <select id="four_g" name="four_g" required>
-                                <option value="1">Yes</option>
-                                <option value="0">No</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="wifi">WiFi</label>
-                            <select id="wifi" name="wifi" required>
-                                <option value="1">Yes</option>
-                                <option value="0">No</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="blue">Bluetooth</label>
-                            <select id="blue" name="blue" required>
-                                <option value="1">Yes</option>
-                                <option value="0">No</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="dual_sim">Dual SIM</label>
-                            <select id="dual_sim" name="dual_sim" required>
-                                <option value="1">Yes</option>
-                                <option value="0">No</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="submit-btn" id="submitBtn">
-                        <span class="btn-text">Predict Price Range</span>
-                        <span class="btn-loader" style="display: none;">Predicting...</span>
+    <div class="dashboard">
+        <main class="main-content">
+            <!-- Top Navbar -->
+            <nav class="navbar">
+                <div class="navbar-brand">
+                    <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                        <line x1="12" y1="18" x2="12.01" y2="18"/>
+                    </svg>
+                    <h1 class="page-title">Price Predictor</h1>
+                </div>
+                <div class="navbar-right">
+                    <button class="nav-btn" id="theme-toggle" title="Toggle Theme">
+                        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="4"/>
+                            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+                        </svg>
+                        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
                     </button>
+                </div>
+            </nav>
+
+            <div class="content-wrapper">
+                <!-- Left: Form -->
+                <div class="glass-card form-container">
+                    <div class="card-header-main">
+                        <h2>Device Specifications</h2>
+                        <p class="card-subtitle">Select smartphone features</p>
+                    </div>
                     
-                    <button type="button" class="sample-btn" onclick="fillSampleData()">
-                        Fill Sample Data
-                    </button>
-                </form>
-            </div>
+                    <form id="predictionForm" class="prediction-form">
+                        <div class="form-grid">
+                            <!-- Column 1: Performance -->
+                            <div class="form-column">
+                                <h3 class="section-title-compact">Performance</h3>
+                                <div class="form-group-compact">
+                                    <label for="ram_capacity">RAM</label>
+                                    <select id="ram_capacity" name="ram_capacity" required>
+                                        <option value="">Select RAM</option>
+                                        <option value="2">2 GB</option>
+                                        <option value="3">3 GB</option>
+                                        <option value="4">4 GB</option>
+                                        <option value="6">6 GB</option>
+                                        <option value="8">8 GB</option>
+                                        <option value="12">12 GB</option>
+                                        <option value="16">16 GB</option>
+                                        <option value="18">18 GB</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label for="internal_memory">Storage</label>
+                                    <select id="internal_memory" name="internal_memory" required>
+                                        <option value="">Select Storage</option>
+                                        <option value="32">32 GB</option>
+                                        <option value="64">64 GB</option>
+                                        <option value="128">128 GB</option>
+                                        <option value="256">256 GB</option>
+                                        <option value="512">512 GB</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label for="processor_speed">Clock Speed</label>
+                                    <select id="processor_speed" name="processor_speed" required>
+                                        <option value="">Select Speed</option>
+                                        <option value="1.5">1.5 GHz</option>
+                                        <option value="1.8">1.8 GHz</option>
+                                        <option value="2.0">2.0 GHz</option>
+                                        <option value="2.2">2.2 GHz</option>
+                                        <option value="2.4">2.4 GHz</option>
+                                        <option value="2.6">2.6 GHz</option>
+                                        <option value="2.8">2.8 GHz</option>
+                                        <option value="3.0">3.0 GHz</option>
+                                        <option value="3.2">3.2 GHz</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label for="num_cores">CPU Cores</label>
+                                    <select id="num_cores" name="num_cores" required>
+                                        <option value="">Select Cores</option>
+                                        <option value="4">Quad Core</option>
+                                        <option value="6">Hexa Core</option>
+                                        <option value="8">Octa Core</option>
+                                    </select>
+                                </div>
+                            </div>
 
-            <div class="result-container" id="resultContainer" style="display: none;">
-                <div class="result-card">
-                    <h2>Prediction Result</h2>
-                    <div class="result-content">
+                            <!-- Column 2: Display & Camera -->
+                            <div class="form-column">
+                                <h3 class="section-title-compact">Display & Camera</h3>
+                                <div class="form-group-compact">
+                                    <label for="primary_camera_rear">Rear Camera</label>
+                                    <select id="primary_camera_rear" name="primary_camera_rear" required>
+                                        <option value="">Select Camera</option>
+                                        <option value="5">5 MP</option>
+                                        <option value="12">12 MP</option>
+                                        <option value="48">48 MP</option>
+                                        <option value="50">50 MP</option>
+                                        <option value="64">64 MP</option>
+                                        <option value="108">108 MP</option>
+                                        <option value="200">200 MP</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label for="primary_camera_front">Front Camera</label>
+                                    <select id="primary_camera_front" name="primary_camera_front" required>
+                                        <option value="">Select Camera</option>
+                                        <option value="5">5 MP</option>
+                                        <option value="8">8 MP</option>
+                                        <option value="16">16 MP</option>
+                                        <option value="32">32 MP</option>
+                                        <option value="50">50 MP</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label for="num_rear_cameras">No. of Cameras</label>
+                                    <select id="num_rear_cameras" name="num_rear_cameras" required>
+                                        <option value="">Select Count</option>
+                                        <option value="1">1 Camera</option>
+                                        <option value="2">2 Cameras</option>
+                                        <option value="3">3 Cameras</option>
+                                        <option value="4">4 Cameras</option>
+                                        <option value="5">5 Cameras</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label for="resolution_height">Resolution (H)</label>
+                                    <select id="resolution_height" name="resolution_height" required>
+                                        <option value="">Select Resolution</option>
+                                        <option value="720">720p (HD)</option>
+                                        <option value="1080">1080p (FHD)</option>
+                                        <option value="1600">1600p (HD+)</option>
+                                        <option value="2400">2400p (FHD+)</option>
+                                        <option value="2772">2772p (QHD+)</option>
+                                        <option value="3840">3840p (4K)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label for="resolution_width">Resolution (W)</label>
+                                    <select id="resolution_width" name="resolution_width" required>
+                                        <option value="">Select Width</option>
+                                        <option value="720">720px</option>
+                                        <option value="1080">1080px</option>
+                                        <option value="1440">1440px</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Column 3: Screen & Battery -->
+                            <div class="form-column">
+                                <h3 class="section-title-compact">Physical & Battery</h3>
+                                <div class="form-group-compact">
+                                    <label for="battery_power">Battery</label>
+                                    <select id="battery_power" name="battery_power" required>
+                                        <option value="">Select Battery</option>
+                                        <option value="1000">1000 mAh</option>
+                                        <option value="1500">1500 mAh</option>
+                                        <option value="2000">2000 mAh</option>
+                                        <option value="2500">2500 mAh</option>
+                                        <option value="3000">3000 mAh</option>
+                                        <option value="3500">3500 mAh</option>
+                                        <option value="4000">4000 mAh</option>
+                                        <option value="4500">4500 mAh</option>
+                                        <option value="5000">5000 mAh</option>
+                                        <option value="5500">5500 mAh</option>
+                                        <option value="6000">6000 mAh</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label for="mobile_wt">Weight</label>
+                                    <select id="mobile_wt" name="mobile_wt" required>
+                                        <option value="">Select Weight</option>
+                                        <option value="100">100g (Light)</option>
+                                        <option value="130">130g</option>
+                                        <option value="150">150g</option>
+                                        <option value="170">170g (Average)</option>
+                                        <option value="190">190g</option>
+                                        <option value="210">210g</option>
+                                        <option value="230">230g (Heavy)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label for="sc_h">Screen Height</label>
+                                    <select id="sc_h" name="sc_h" required>
+                                        <option value="">Select Height</option>
+                                        <option value="8">8 cm (Small)</option>
+                                        <option value="10">10 cm</option>
+                                        <option value="12">12 cm</option>
+                                        <option value="13">13 cm</option>
+                                        <option value="14">14 cm (Average)</option>
+                                        <option value="15">15 cm</option>
+                                        <option value="16">16 cm</option>
+                                        <option value="17">17 cm (Large)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label for="sc_w">Screen Width</label>
+                                    <select id="sc_w" name="sc_w" required>
+                                        <option value="">Select Width</option>
+                                        <option value="4">4 cm (Narrow)</option>
+                                        <option value="5">5 cm</option>
+                                        <option value="6">6 cm</option>
+                                        <option value="6.5">6.5 cm (Average)</option>
+                                        <option value="7">7 cm</option>
+                                        <option value="7.5">7.5 cm</option>
+                                        <option value="8">8 cm (Wide)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Column 4: Connectivity -->
+                            <div class="form-column">
+                                <h3 class="section-title-compact">Connectivity</h3>
+                                <div class="form-group-compact">
+                                    <label for="five_g">5G</label>
+                                    <select id="five_g" name="5G_or_not" required>
+                                        <option value="">Select</option>
+                                        <option value="1">Yes</option>
+                                        <option value="0">No</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label for="fast_charging_available">Fast Charging</label>
+                                    <select id="fast_charging_available" name="fast_charging_available" required>
+                                        <option value="">Select</option>
+                                        <option value="1">Yes</option>
+                                        <option value="0">No</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label for="extended_memory_available">Expandable Storage</label>
+                                    <select id="extended_memory_available" name="extended_memory_available" required>
+                                        <option value="">Select</option>
+                                        <option value="1">Yes</option>
+                                        <option value="0">No</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="sample-btn" onclick="fillSampleData()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                                </svg>
+                                Quick Fill
+                            </button>
+                            <button type="submit" class="submit-btn" id="submitBtn">
+                                <span class="btn-text">Predict Price</span>
+                                <span class="btn-loader" style="display: none;">Analyzing...</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right: Results -->
+                <div class="results-panel">
+                    <div class="glass-card result-card" id="resultCard" style="display: none;">
+                        <h2>Prediction Result</h2>
                         <div class="price-range" id="priceRange"></div>
                         <div class="prediction-details" id="predictionDetails"></div>
+                        <button class="reset-btn" onclick="resetForm()">New Prediction</button>
                     </div>
-                    <button class="reset-btn" onclick="resetForm()">Predict Another</button>
+
+                    <div class="glass-card error-card" id="errorCard" style="display: none;">
+                        <h3>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                            Error
+                        </h3>
+                        <p id="errorMessage"></p>
+                        <button class="reset-btn" onclick="resetForm()">Try Again</button>
+                    </div>
+
+                    <div class="glass-card placeholder-card" id="placeholderCard">
+                        <svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                            <line x1="12" y1="18" x2="12.01" y2="18"/>
+                        </svg>
+                        <h3>Ready to Predict</h3>
+                        <p>Select device specifications and click "Predict Price" to see the estimated price range.</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="error-container" id="errorContainer" style="display: none;">
-                <div class="error-card">
-                    <h3><i data-lucide="x-circle"></i> Error</h3>
-                    <p id="errorMessage"></p>
-                    <button class="reset-btn" onclick="resetForm()">Try Again</button>
+            <!-- Recommendations Section -->
+            <div class="glass-card recommendations-card" id="recommendationsCard" style="display: none;">
+                <div class="card-header-main">
+                    <h2>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        Matching Smartphones
+                    </h2>
+                    <p class="card-subtitle">Real devices matching your specifications</p>
                 </div>
+                <div class="phone-grid" id="phoneGrid"></div>
             </div>
-
-            <div class="recommendations-container" id="recommendationsContainer" style="display: none;">
-                <div class="recommendations-card">
-                    <h2><i data-lucide="star"></i> Matching Smartphones</h2>
-                    <p class="recommendations-subtitle">Real phones that best match your specifications</p>
-                    <div class="phone-grid" id="phoneGrid"></div>
-                </div>
-            </div>
-        </div>
-
-        <footer>
-            <p>Powered by AWS SageMaker | Machine Learning Model</p>
-        </footer>
+        </main>
     </div>
 
     <script src="{{ url_for('static', filename='app.js') }}"></script>
-    <script>lucide.createIcons();</script>
 </body>
 </html>
-
