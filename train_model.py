@@ -42,6 +42,12 @@ def preprocess_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series, List[str
     if missing_columns:
         raise ValueError(f"Missing required feature columns: {missing_columns}")
 
+    # Clean numeric columns: remove whitespace from string values, then coerce to numeric
+    for col in BASE_FEATURE_COLUMNS:
+        df[col] = df[col].astype(str).str.replace(r'\s+', '', regex=True)
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+    df.dropna(subset=BASE_FEATURE_COLUMNS, inplace=True)
+
     # Feature engineering to boost model performance
     df['pixel_area'] = df['px_height'] * df['px_width']
     df['ppi'] = np.sqrt(df['px_height'] ** 2 + df['px_width'] ** 2) / np.where(df['sc_h'] == 0, 1, df['sc_h'])

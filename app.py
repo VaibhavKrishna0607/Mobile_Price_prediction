@@ -4,9 +4,17 @@ import json
 import os
 from datetime import datetime
 import logging
+import numpy as np
+import joblib
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
+secret_key = os.environ.get('SECRET_KEY')
+if not secret_key:
+    raise RuntimeError("SECRET_KEY environment variable is not set. Add it to your .env file.")
+app.config['SECRET_KEY'] = secret_key
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -21,6 +29,18 @@ SAGEMAKER_ROLE = os.environ.get('SAGEMAKER_ROLE', 'arn:aws:iam::your-account:rol
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 USE_MOCK_PREDICTIONS = os.environ.get('USE_MOCK_PREDICTIONS', 'false').lower() == 'true'
+
+# Load local model if available
+LOCAL_MODEL_PATH = os.environ.get('LOCAL_MODEL_PATH', 'mobile_price_model.pkl')
+local_model_artifact = None
+try:
+    if os.path.exists(LOCAL_MODEL_PATH):
+        local_model_artifact = joblib.load(LOCAL_MODEL_PATH)
+        logger.info(f"Local model loaded from {LOCAL_MODEL_PATH}")
+    else:
+        logger.warning(f"Local model not found at {LOCAL_MODEL_PATH}. Using mock predictions.")
+except Exception as e:
+    logger.warning(f"Failed to load local model: {e}")
 
 # Initialize SageMaker clients (only if credentials are available)
 sagemaker_runtime = None
@@ -89,10 +109,37 @@ def prepare_features(form_data):
     return features
 
 
+BASE_FEATURE_COLUMNS = [
+    'battery_power', 'blue', 'clock_speed', 'dual_sim', 'fc',
+    'four_g', 'int_memory', 'm_dep', 'mobile_wt', 'n_cores',
+    'pc', 'px_height', 'px_width', 'ram', 'sc_h', 'sc_w',
+    'talk_time', 'three_g', 'touch_screen', 'wifi'
+]
+
+
+def local_predict_price_range(features):
+    """
+    Predict using the locally trained .pkl model with feature engineering.
+    """
+    artifact = local_model_artifact
+    model = artifact['model']
+
+    battery_power, _, _, _, _, _, _, _, mobile_wt, n_cores, _, px_height, px_width, ram, sc_h, sc_w, _, _, _, _ = features
+
+    pixel_area = px_height * px_width
+    ppi = np.sqrt(px_height ** 2 + px_width ** 2) / (sc_h if sc_h != 0 else 1)
+    screen_ratio = sc_h / sc_w if sc_w != 0 else 0
+    ram_per_core = ram / n_cores if n_cores != 0 else 0
+    battery_per_weight = battery_power / mobile_wt if mobile_wt != 0 else 0
+
+    full_features = list(features) + [pixel_area, ppi, screen_ratio, ram_per_core, battery_per_weight]
+    prediction = model.predict([full_features])[0]
+    return {'predictions': [{'predicted_label': int(prediction)}]}
+
+
 def mock_predict_price_range(features):
     """
-    Mock prediction function for testing without AWS
-    Simple rule-based prediction based on key features
+    Fallback rule-based prediction when neither AWS nor local model is available.
     """
     ram = features[13]  # RAM in MB
     battery = features[0]  # Battery power
@@ -146,11 +193,14 @@ def mock_predict_price_range(features):
 
 def predict_price_range(features):
     """
-    Call SageMaker endpoint to get price prediction
-    Falls back to mock prediction if AWS is not available
+    Call SageMaker endpoint to get price prediction.
+    Falls back to local model, then mock if neither is available.
     """
     if USE_MOCK_PREDICTIONS or sagemaker_runtime is None:
-        logger.info("Using mock prediction (AWS not configured)")
+        if local_model_artifact is not None:
+            logger.info("Using local model prediction")
+            return local_predict_price_range(features)
+        logger.info("Using mock prediction (no AWS, no local model)")
         return mock_predict_price_range(features)
     
     try:
