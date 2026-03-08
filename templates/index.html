@@ -6,11 +6,12 @@
     <title>Smartphone Price Predictor</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📱 Smartphone Price Predictor</h1>
+            <h1><i data-lucide="smartphone"></i> Smartphone Price Predictor</h1>
             <p class="subtitle">Predict smartphone price ranges using Machine Learning</p>
         </header>
 
@@ -18,7 +19,7 @@
             <div class="form-container">
                 <form id="predictionForm" class="prediction-form">
                     <div class="form-section">
-                        <h2>📋 Basic Specifications</h2>
+                        <h2><i data-lucide="list"></i> Basic Specifications</h2>
                         
                         <div class="form-group">
                             <label for="battery_power">Battery Power (mAh)</label>
@@ -52,7 +53,7 @@
                     </div>
 
                     <div class="form-section">
-                        <h2>📷 Camera Specifications</h2>
+                        <h2><i data-lucide="camera"></i> Camera Specifications</h2>
                         
                         <div class="form-group">
                             <label for="pc">Primary Camera (MP)</label>
@@ -68,7 +69,7 @@
                     </div>
 
                     <div class="form-section">
-                        <h2>🖥️ Display Specifications</h2>
+                        <h2><i data-lucide="monitor"></i> Display Specifications</h2>
                         
                         <div class="form-group">
                             <label for="px_height">Pixel Resolution Height</label>
@@ -104,7 +105,7 @@
                     </div>
 
                     <div class="form-section">
-                        <h2>📱 Physical Specifications</h2>
+                        <h2><i data-lucide="tablet-smartphone"></i> Physical Specifications</h2>
                         
                         <div class="form-group">
                             <label for="mobile_wt">Mobile Weight (grams)</label>
@@ -126,7 +127,7 @@
                     </div>
 
                     <div class="form-section">
-                        <h2>📶 Connectivity & Features</h2>
+                        <h2><i data-lucide="wifi"></i> Connectivity &amp; Features</h2>
                         
                         <div class="form-group">
                             <label for="three_g">3G Support</label>
@@ -171,7 +172,7 @@
 
                     <button type="submit" class="submit-btn" id="submitBtn">
                         <span class="btn-text">Predict Price Range</span>
-                        <span class="btn-loader" style="display: none;">⏳ Predicting...</span>
+                        <span class="btn-loader" style="display: none;">Predicting...</span>
                     </button>
                     
                     <button type="button" class="sample-btn" onclick="fillSampleData()">
@@ -193,7 +194,7 @@
 
             <div class="error-container" id="errorContainer" style="display: none;">
                 <div class="error-card">
-                    <h3>❌ Error</h3>
+                    <h3><i data-lucide="x-circle"></i> Error</h3>
                     <p id="errorMessage"></p>
                     <button class="reset-btn" onclick="resetForm()">Try Again</button>
                 </div>
@@ -206,6 +207,7 @@
     </div>
 
     <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>
 

@@ -23,7 +23,7 @@ ENDPOINT_INSTANCE = "ml.t2.medium"
 def upload_training_data():
     """Upload training data to S3"""
     print("\n" + "=" * 60)
-    print("📤 Uploading training data to S3...")
+    print("[S3] Uploading training data to S3...")
     print("=" * 60)
     
     s3 = boto3.client('s3', region_name=REGION)
@@ -35,14 +35,14 @@ def upload_training_data():
     s3.upload_file(local_file, BUCKET_NAME, s3_key)
     s3_uri = f"s3://{BUCKET_NAME}/{s3_key}"
     
-    print(f"✅ Training data uploaded to: {s3_uri}")
+    print(f"[OK] Training data uploaded to: {s3_uri}")
     return s3_uri
 
 
 def train_model(training_data_uri):
     """Train model on SageMaker"""
     print("\n" + "=" * 60)
-    print("🚀 Starting SageMaker training job...")
+    print("[SAGEMAKER] Starting SageMaker training job...")
     print("=" * 60)
     
     sagemaker_session = sagemaker.Session(
@@ -68,14 +68,14 @@ def train_model(training_data_uri):
     
     sklearn_estimator.fit({"training": training_data_uri}, wait=True)
     
-    print("✅ Training completed!")
+    print("[OK] Training completed!")
     return sklearn_estimator
 
 
 def deploy_endpoint(estimator):
     """Deploy model to SageMaker endpoint"""
     print("\n" + "=" * 60)
-    print("🌐 Deploying model to SageMaker endpoint...")
+    print("[ENDPOINT] Deploying model to SageMaker endpoint...")
     print("=" * 60)
     
     endpoint_name = f"mobile-price-predictor-endpoint"
@@ -90,14 +90,14 @@ def deploy_endpoint(estimator):
         endpoint_name=endpoint_name
     )
     
-    print(f"✅ Endpoint deployed: {endpoint_name}")
+    print(f"[OK] Endpoint deployed: {endpoint_name}")
     return predictor, endpoint_name
 
 
 def test_endpoint(endpoint_name):
     """Test the deployed endpoint"""
     print("\n" + "=" * 60)
-    print("🧪 Testing endpoint...")
+    print("[TEST] Testing endpoint...")
     print("=" * 60)
     
     runtime = boto3.client('sagemaker-runtime', region_name=REGION)
@@ -115,13 +115,13 @@ def test_endpoint(endpoint_name):
     result = response['Body'].read().decode('utf-8')
     print(f"Test input: {test_data[:50]}...")
     print(f"Prediction result: {result}")
-    print("✅ Endpoint is working!")
+    print(f"[OK] Endpoint is working!")
     return result
 
 
 def main():
     print("\n" + "=" * 60)
-    print("🚀 Mobile Price Predictor - SageMaker Deployment")
+    print(" Mobile Price Predictor - SageMaker Deployment")
     print("=" * 60)
     print(f"Region: {REGION}")
     print(f"Bucket: {BUCKET_NAME}")
@@ -141,7 +141,7 @@ def main():
         test_endpoint(endpoint_name)
         
         print("\n" + "=" * 60)
-        print("🎉 DEPLOYMENT COMPLETE!")
+        print("DEPLOYMENT COMPLETE")
         print("=" * 60)
         print(f"\nEndpoint name: {endpoint_name}")
         print(f"\nTo use in your app, set environment variable:")

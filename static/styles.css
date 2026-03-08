@@ -85,6 +85,37 @@ header h1 {
     gap: 10px;
 }
 
+/* Lucide icon sizing */
+.form-section h2 svg,
+header h1 svg,
+.error-card h3 svg,
+.prediction-details h3 svg {
+    width: 1.1em;
+    height: 1.1em;
+    stroke: currentColor;
+    flex-shrink: 0;
+}
+
+header h1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.prediction-details h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.error-card h3 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
 .form-group {
     margin-bottom: 25px;
 }

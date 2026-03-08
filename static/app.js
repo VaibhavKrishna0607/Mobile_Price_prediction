@@ -77,11 +77,14 @@ function displayResult(result) {
     
     // Update prediction details
     predictionDetailsElement.innerHTML = `
-        <h3>📊 Prediction Details</h3>
+        <h3><i data-lucide="bar-chart-2"></i> Prediction Details</h3>
         <p><strong>Price Range:</strong> ${rangeInfo.price}</p>
         <p><strong>Category:</strong> ${rangeInfo.text}</p>
         <p><strong>Prediction Confidence:</strong> Based on your specifications</p>
     `;
+    
+    // Re-init lucide icons injected into dynamic content
+    lucide.createIcons();
     
     // Show result container
     resultContainer.style.display = 'block';
