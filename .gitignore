@@ -42,7 +42,7 @@ instance/
 .DS_Store
 Thumbs.db
 
-# Model files
+# Model files (generated at build time, not committed)
 *.pkl
 *.joblib
 *.h5
@@ -50,6 +50,7 @@ Thumbs.db
 
 # Data files (optional - remove if you want to track data)
 *.csv
+!mob_price_classification_train.csv
 !sample_data.csv
 
 # Logs

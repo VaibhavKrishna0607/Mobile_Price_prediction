@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: mobile-price-predictor
+    runtime: python
+    buildCommand: "pip install -r requirements.txt && python train_model.py --data mob_price_classification_train.csv --model-path mobile_price_model.pkl"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: LOCAL_MODEL_PATH
+        value: mobile_price_model.pkl
+      - key: AWS_REGION
+        value: ap-south-1
+      - key: SAGEMAKER_ENDPOINT
+        value: mobile-price-predictor-endpoint
+      - key: SAGEMAKER_ROLE
+        value: arn:aws:iam::266735811100:role/SageMakerExecutionRole
