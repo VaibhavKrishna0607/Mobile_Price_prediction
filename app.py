@@ -301,8 +301,8 @@ def predict():
         # Prepare features
         features = prepare_features(form_data)
         
-        # Validate: all required fields must be provided
-        missing = [f for f in FORM_FIELDS if not form_data.get(f, '')]
+        # Validate: all required fields must be present (not empty string)
+        missing = [f for f in FORM_FIELDS if form_data.get(f, '') == '']
         if missing:
             return jsonify({
                 'success': False,
