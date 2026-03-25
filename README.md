@@ -1,6 +1,9 @@
 # 📱 Smartphone Price Predictor
 
-**Live Demo:** https://mobile-price-prediction-27wd.onrender.com/
+> ⚠️ **ALERT:** This application has been migrated from Render to Replit. The Render deployment has expired.
+
+## 🚀 **Live Demo — Now Deployed on Replit!**
+### 👉 **[https://mobi-predict--vaibhavkrishn15.replit.app/](https://mobi-predict--vaibhavkrishn15.replit.app/)**
 
 A web application that predicts smartphone price ranges using a machine learning model deployed on AWS SageMaker. This application classifies smartphones into 4 price categories based on 20 different specifications.
 
