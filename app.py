@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect
 import boto3
 import json
 import os
@@ -15,6 +15,12 @@ secret_key = os.environ.get('SECRET_KEY')
 if not secret_key:
     raise RuntimeError("SECRET_KEY environment variable is not set. Add it to your .env file.")
 app.config['SECRET_KEY'] = secret_key
+
+# Redirect from Render to Replit
+@app.before_request
+def redirect_to_replit():
+    if request.host.startswith('mobile-price-prediction-27wd.onrender.com'):
+        return redirect('https://mobi-predict--vaibhavkrishn15.replit.app' + request.path, code=301)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
